@@ -1,14 +1,14 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "axxis-app-bff.name" -}}
+{{- define "axxispay-helm-template.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Create a default fully qualified app name.
 */}}
-{{- define "axxis-app-bff.fullname" -}}
+{{- define "axxispay-helm-template.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -19,10 +19,10 @@ Create a default fully qualified app name.
 {{/*
 Common labels
 */}}
-{{- define "axxis-app-bff.labels" -}}
-app: {{ include "axxis-app-bff.fullname" . }}
+{{- define "axxispay-helm-template.labels" -}}
+app: {{ include "axxispay-helm-template.fullname" . }}
 helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-app.kubernetes.io/name: {{ include "axxis-app-bff.name" . }}
+app.kubernetes.io/name: {{ include "axxispay-helm-template.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
@@ -31,6 +31,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "axxis-app-bff.selectorLabels" -}}
-app: {{ include "axxis-app-bff.fullname" . }}
+{{- define "axxispay-helm-template.selectorLabels" -}}
+app: {{ include "axxispay-helm-template.fullname" . }}
 {{- end }}

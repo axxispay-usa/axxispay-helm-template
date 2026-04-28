@@ -2,10 +2,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: {{ include "axxis-app-bff.fullname" . }}
+  name: {{ include "axxispay-helm-template.fullname" . }}
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "axxis-app-bff.labels" . | nindent 4 }}
+    {{- include "axxispay-helm-template.labels" . | nindent 4 }}
   annotations:
     {{- if .Values.reloader.enabled }}
     reloader.stakater.com/auto: "true"
@@ -14,14 +14,14 @@ metadata:
 spec:
   selector:
     matchLabels:
-      {{- include "axxis-app-bff.selectorLabels" . | nindent 6 }}
+      {{- include "axxispay-helm-template.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "axxis-app-bff.selectorLabels" . | nindent 8 }}
+        {{- include "axxispay-helm-template.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        - name: {{ include "axxis-app-bff.fullname" . }}
+        - name: {{ include "axxispay-helm-template.fullname" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -31,11 +31,11 @@ spec:
           envFrom:
             {{- if .Values.configmap.enabled }}
             - configMapRef:
-                name: {{ include "axxis-app-bff.fullname" . }}
+                name: {{ include "axxispay-helm-template.fullname" . }}
             {{- end }}
             {{- if .Values.externalSecret.enabled }}
             - secretRef:
-                name: {{ include "axxis-app-bff.fullname" . }}
+                name: {{ include "axxispay-helm-template.fullname" . }}
             {{- end }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}

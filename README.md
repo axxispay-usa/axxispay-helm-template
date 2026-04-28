@@ -1,11 +1,11 @@
-# axxis-app-bff Helm Chart
+# axxispay-helm-template Helm Chart
 
-Helm chart migrado a partir dos manifests Kustomize do serviço `axxis-app-bff`.
+Helm chart migrado a partir dos manifests Kustomize do serviço `axxispay-bff`.
 
 ## Estrutura
 
 ```
-axxis-app-bff/
+axxispay-helm-template/
 ├── Chart.yaml
 ├── values.yaml              # valores padrão
 ├── values-homolog.yaml      # overrides para homolog
@@ -24,7 +24,7 @@ axxis-app-bff/
 
 ### Homolog
 ```bash
-helm upgrade --install axxis-app-bff . \
+helm upgrade --install axxispay-helm-template . \
   -f values-homolog.yaml \
   --namespace bns \
   --create-namespace
@@ -32,7 +32,7 @@ helm upgrade --install axxis-app-bff . \
 
 ### Produção
 ```bash
-helm upgrade --install axxis-app-bff . \
+helm upgrade --install axxispay-helm-template . \
   -f values-prod.yaml \
   --set image.tag=<GIT_SHA> \
   --namespace bns
@@ -43,7 +43,7 @@ helm upgrade --install axxis-app-bff . \
 source:
   repoURL: <seu-repo>
   targetRevision: HEAD
-  path: charts/axxis-app-bff
+  path: charts/axxispay-helm-template
   helm:
     valueFiles:
       - values-homolog.yaml

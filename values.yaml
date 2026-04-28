@@ -73,8 +73,8 @@ ingress:
     alb.ingress.kubernetes.io/group.name: axxis-app
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/load-balancer-name: axxis-app-bff
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/load-balancer-name: axxispay-helm-template
+    alb.ingress.kubernetes.io/listen-ports: "[{\"HTTP\":80},{\"HTTPS\":443}]"
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:636155393863:certificate/89d6296b-c677-4846-808a-5fea7a5ee620
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
     alb.ingress.kubernetes.io/backend-protocol: HTTP
@@ -83,9 +83,9 @@ ingress:
     alb.ingress.kubernetes.io/success-codes: "200-399"
   hosts:
     - host: api.homolog.bnscred.com.br
-      serviceName: axxis-app-bff
+      serviceName: axxispay-helm-template
     - host: api-preview.homolog.bnscred.com.br
-      serviceName: axxis-app-bff-preview
+      serviceName: axxispay-helm-template-preview
 
 # -- HPA settings
 hpa:

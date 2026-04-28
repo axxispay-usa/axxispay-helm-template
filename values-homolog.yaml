@@ -7,9 +7,9 @@ image:
 ingress:
   hosts:
     - host: api.homolog.bnscred.com.br
-      serviceName: axxis-app-bff
+      serviceName: axxispay-helm-template
     - host: api-preview.homolog.bnscred.com.br
-      serviceName: axxis-app-bff-preview
+      serviceName: axxispay-helm-template-preview
 
 hpa:
   minReplicas: 1

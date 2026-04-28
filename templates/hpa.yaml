@@ -2,15 +2,15 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "axxis-app-bff.fullname" . }}
+  name: {{ include "axxispay-helm-template.fullname" . }}
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "axxis-app-bff.labels" . | nindent 4 }}
+    {{- include "axxispay-helm-template.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: argoproj.io/v1alpha1
     kind: Rollout
-    name: {{ include "axxis-app-bff.fullname" . }}
+    name: {{ include "axxispay-helm-template.fullname" . }}
   minReplicas: {{ .Values.hpa.minReplicas }}
   maxReplicas: {{ .Values.hpa.maxReplicas }}
   metrics:

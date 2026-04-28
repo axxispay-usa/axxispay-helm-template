@@ -1,6 +1,6 @@
 apiVersion: v2
-name: axxis-app-bff
-description: Helm chart for axxis-app-bff (BFF service)
+name: axxispay-helm-template
+description: Helm chart for axxispay-helm-template (BFF service)
 type: application
 version: 0.1.0
 appVersion: "homolog"
