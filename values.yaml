@@ -1,0 +1,141 @@
+# -- Global settings
+nameOverride: ""
+fullnameOverride: ""
+
+# -- Namespace
+namespace: bns
+
+# -- Image settings
+image:
+  repository: 636155393863.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-bff
+  tag: homolog
+  pullPolicy: Always
+
+# -- Replica settings (overridden by HPA)
+replicaCount: 1
+
+# -- Argo Rollout strategy
+rollout:
+  enabled: true
+  strategy:
+    canary:
+      maxSurge: "25%"
+      maxUnavailable: 0
+
+# -- Container resources
+resources:
+  requests:
+    cpu: 50m
+    memory: 100Mi
+  limits:
+    memory: 128Mi
+
+# -- Container port
+containerPort: 8080
+
+# -- Health probe settings
+probes:
+  liveness:
+    path: /health
+    port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /health
+    port: 8080
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# -- Security context
+securityContext:
+  allowPrivilegeEscalation: false
+  runAsUser: 1001
+
+# -- Reloader annotations
+reloader:
+  enabled: true
+  strategy: restart
+
+# -- Service settings
+service:
+  port: 80
+  targetPort: 8080
+
+# -- Ingress settings
+ingress:
+  enabled: true
+  ingressClassName: alb
+  annotations:
+    alb.ingress.kubernetes.io/group.name: axxis-app
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/load-balancer-name: axxis-app-bff
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:636155393863:certificate/89d6296b-c677-4846-808a-5fea7a5ee620
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/success-codes: "200-399"
+  hosts:
+    - host: api.homolog.bnscred.com.br
+      serviceName: axxis-app-bff
+    - host: api-preview.homolog.bnscred.com.br
+      serviceName: axxis-app-bff-preview
+
+# -- HPA settings
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 90
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+
+# -- ConfigMap env vars
+configmap:
+  enabled: true
+  data:
+    BFF_PORT: "8080"
+    BACKEND_ADIANTAMENTO_URL: "http://axxis-app-ads/api/v1"
+    BACKEND_BNS_URL: "http://axxis-bns-api/api/v1"
+    BNS_API_BASE_URL: "http://axxis-bns-api/api/v1"
+    BNS_OAUTH_CLIENT_ID: "adiantamento-salario"
+
+# -- ExternalSecret settings
+externalSecret:
+  enabled: true
+  refreshInterval: 30s
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: bns-apps
+  target:
+    creationPolicy: Owner
+  dataFrom:
+    - extract:
+        key: bns/bns-bff
+
+# -- Preview variant (for canary/preview ingress)
+preview:
+  enabled: false

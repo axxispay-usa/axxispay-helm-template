@@ -1,0 +1,6 @@
+apiVersion: v2
+name: axxis-app-bff
+description: Helm chart for axxis-app-bff (BFF service)
+type: application
+version: 0.1.0
+appVersion: "homolog"

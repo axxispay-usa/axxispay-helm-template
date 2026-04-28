@@ -1,0 +1,62 @@
+{{- if .Values.rollout.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ include "axxis-app-bff.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "axxis-app-bff.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.reloader.enabled }}
+    reloader.stakater.com/auto: "true"
+    reloader.stakater.com/rollout-strategy: {{ .Values.reloader.strategy }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "axxis-app-bff.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "axxis-app-bff.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ include "axxis-app-bff.fullname" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          envFrom:
+            {{- if .Values.configmap.enabled }}
+            - configMapRef:
+                name: {{ include "axxis-app-bff.fullname" . }}
+            {{- end }}
+            {{- if .Values.externalSecret.enabled }}
+            - secretRef:
+                name: {{ include "axxis-app-bff.fullname" . }}
+            {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: {{ .Values.probes.liveness.port }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: {{ .Values.probes.readiness.port }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+  strategy:
+    canary:
+      maxSurge: {{ .Values.rollout.strategy.canary.maxSurge | quote }}
+      maxUnavailable: {{ .Values.rollout.strategy.canary.maxUnavailable }}
+{{- end }}
