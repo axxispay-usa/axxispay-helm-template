@@ -7,12 +7,13 @@ Expand the name of the chart.
 
 {{/*
 Create a default fully qualified app name.
+Uses Release.Name so multiple apps can coexist in the same namespace.
 */}}
 {{- define "axxispay-helm-template.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
 
@@ -33,4 +34,5 @@ Selector labels
 */}}
 {{- define "axxispay-helm-template.selectorLabels" -}}
 app: {{ include "axxispay-helm-template.fullname" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
