@@ -1,0 +1,9 @@
+{
+  "release-type": "helm",
+  "packages": {
+    ".": {
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}

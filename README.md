@@ -65,6 +65,72 @@ helm upgrade --install axxis-bns-bff .
 #        HPA/axxis-bns-bff, ConfigMap/axxis-bns-bff, ExternalSecret/axxis-bns-bff
 ```
 
+## Publicando uma nova versão
+
+O processo de release é totalmente automatizado via dois workflows:
+
+```
+commit (feat/fix) → push main → release-please abre PR → merge PR → GitHub Release criada
+                                                                            ↓
+                                                               release.yaml empacota o chart
+                                                               e publica no gh-pages (Helm repo)
+```
+
+### Workflows
+
+| Arquivo | Gatilho | Responsabilidade |
+|---|---|---|
+| `release-please.yaml` | push em `main` | Lê commits, abre/atualiza PR de release com versão bumped e CHANGELOG |
+| `release.yaml` | GitHub Release publicada | Empacota o chart e publica no repositório Helm (gh-pages) |
+
+### Como funciona na prática
+
+Use o padrão [Conventional Commits](https://www.conventionalcommits.org/) nas mensagens de commit:
+
+| Prefixo | Efeito na versão | Exemplo |
+|---|---|---|
+| `fix:` | patch `0.1.0 → 0.1.1` | `fix: corrige porta do healthcheck` |
+| `feat:` | minor `0.1.0 → 0.2.0` | `feat: adiciona suporte a blue-green` |
+| `feat!:` ou `BREAKING CHANGE` | major `0.1.0 → 1.0.0` | `feat!: remove suporte a Deployment` |
+| `chore:`, `docs:`, `refactor:` | sem release | `docs: atualiza README` |
+
+O release-please acumula os commits e abre um PR como este:
+
+```
+chore: release 0.2.0
+
+- feat: adiciona suporte a blue-green strategy
+- fix: corrige indentação no configmap
+```
+
+Ao mergear esse PR, a GitHub Release é criada automaticamente e o `release.yaml` publica o chart.
+
+### Configuração necessária no GitHub (uma única vez)
+
+- `Settings → Pages → Source`: branch `gh-pages`, pasta `/root`
+- `Settings → Actions → General → Workflow permissions`: `Read and write permissions`
+
+### Via comando (release manual)
+
+```bash
+VERSION=1.6.1
+curl -sSL "https://github.com/helm/chart-releaser/releases/download/v${VERSION}/chart-releaser_${VERSION}_linux_amd64.tar.gz" \
+  | tar -xz cr && sudo mv cr /usr/local/bin/cr
+
+cr package .
+cr upload --owner <org> --git-repo <repo> --token <GITHUB_TOKEN>
+cr index  --owner <org> --git-repo <repo> --token <GITHUB_TOKEN> \
+          --pages-branch gh-pages --push
+```
+
+### Adicionando o repositório no Helm
+
+```bash
+helm repo add axxispay https://<org>.github.io/<repo>
+helm repo update
+helm search repo axxispay
+```
+
 ## Deploy
 
 ### Homolog
