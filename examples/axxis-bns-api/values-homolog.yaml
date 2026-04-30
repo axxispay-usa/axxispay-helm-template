@@ -1,0 +1,26 @@
+# Deploy: helm upgrade --install axxis-bns-api axxispay/helm-template -f values-homolog.yaml
+# Todos os recursos serão criados com o nome: axxis-bns-api
+namespace: bns
+
+image:
+  repository: 636155393863.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-api
+  tag: homolog
+
+ingress:
+  hosts:
+    - host: api.homolog.bnscred.com.br
+
+hpa:
+  minReplicas: 1
+  maxReplicas: 3
+
+externalSecret:
+  refreshInterval: 5m
+  dataFrom:
+    - extract:
+        key: bns/axxis-bns-api
+
+configmap:
+  data:
+    APP_PORT: "8080"
+    DATABASE_URL: "jdbc:postgresql://axxis-bns-db:5432/bns"

@@ -1,0 +1,33 @@
+# Deploy: helm upgrade --install axxis-bns-ads axxispay/helm-template -f values-prod.yaml --set image.tag=<GIT_SHA>
+# Todos os recursos serão criados com o nome: axxis-bns-ads
+namespace: bns
+
+image:
+  repository: 636155393863.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-ads
+  tag: latest
+
+ingress:
+  hosts:
+    - host: ads.bnscred.com.br
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 8
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+externalSecret:
+  refreshInterval: 1h
+  dataFrom:
+    - extract:
+        key: bns/axxis-bns-ads
+
+configmap:
+  data:
+    APP_PORT: "8080"
+    BACKEND_BNS_URL: "http://axxis-bns-api/api/v1"
