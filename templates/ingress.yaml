@@ -21,7 +21,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .serviceName }}
+                name: {{ .serviceName | default (include "axxispay-helm-template.fullname" $) }}
                 port:
                   number: {{ $.Values.service.port }}
     {{- end }}
