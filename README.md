@@ -2,6 +2,29 @@
 
 Helm chart genérico para todas as aplicações da Axxispay. Suporta múltiplas aplicações no mesmo namespace — o nome de todos os recursos Kubernetes é definido pelo `Release.Name` passado no `helm install`.
 
+## Por que Helm em vez de manifestos puros?
+
+Com manifestos YAML puros + ArgoCD, cada aplicação exige um conjunto de arquivos independentes. Qualquer mudança transversal — como adicionar um label, ajustar uma política de HPA ou trocar o provedor de secrets — precisa ser replicada manualmente em todos os repositórios. Isso gera inconsistência, aumenta o risco de erro humano e torna o onboarding de novas aplicações lento.
+
+Com Helm + ArgoCD, a lógica vive em um único lugar e cada aplicação só descreve o que é específico dela:
+
+| | Manifestos puros | Helm chart genérico |
+|---|---|---|
+| **Onboarding de nova app** | Copiar e adaptar todos os YAMLs | Criar um `values.yaml` com ~20 linhas |
+| **Mudança transversal** | Editar N repositórios | Editar 1 template, todas as apps recebem |
+| **Ambientes (homolog/prod)** | Arquivos duplicados ou Kustomize overlay | `values-homolog.yaml` e `values-prod.yaml` com apenas os overrides |
+| **Consistência** | Depende de disciplina manual | Garantida pelo template — padrões são herdados |
+| **Rollback** | `kubectl apply` de uma revisão anterior | `helm rollback <release> <revision>` |
+| **Histórico de releases** | Apenas git history | `helm history <release>` com status de cada deploy |
+| **Diff antes de aplicar** | `kubectl diff` limitado | `helm diff upgrade` mostra exatamente o que vai mudar |
+| **Validação local** | Nenhuma sem cluster | `helm template` + `helm lint` sem precisar de cluster |
+
+### No contexto da Axxispay
+
+- Uma nova aplicação entra em produção adicionando apenas uma pasta em `examples/` com dois arquivos de values — sem tocar nos templates.
+- Atualizações de segurança (ex: novo `ssl-policy` do ALB, novo campo no `securityContext`) são aplicadas em um único commit e propagadas para todas as apps no próximo sync do ArgoCD.
+- O ArgoCD continua sendo a fonte de verdade para o estado do cluster — o Helm atua apenas como motor de template, sem conflito entre as ferramentas.
+
 ## Estrutura
 
 ```
