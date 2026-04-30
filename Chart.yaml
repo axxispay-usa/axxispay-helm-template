@@ -3,4 +3,4 @@ name: axxispay-helm-template
 description: Helm chart for axxispay-helm-template (BFF service)
 type: application
 version: 0.1.0
-appVersion: "homolog"
+appVersion: "1.0.0"
