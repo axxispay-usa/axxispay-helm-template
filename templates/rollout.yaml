@@ -59,4 +59,8 @@ spec:
     canary:
       maxSurge: {{ .Values.rollout.strategy.canary.maxSurge | quote }}
       maxUnavailable: {{ .Values.rollout.strategy.canary.maxUnavailable }}
+      {{- if .Values.rollout.strategy.canary.steps }}
+      steps:
+        {{- toYaml .Values.rollout.strategy.canary.steps | nindent 8 }}
+      {{- end }}
 {{- end }}
