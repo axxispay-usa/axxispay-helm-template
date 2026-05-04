@@ -2,16 +2,16 @@
 nameOverride: ""
 fullnameOverride: ""
 
-# -- Namespace
-namespace: bns
+# -- Namespace onde os recursos serão criados
+namespace: ""
 
 # -- Image settings
 image:
-  repository: 636155393863.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-bff
-  tag: homolog
+  repository: ""   # obrigatório: ex: 000000000000.dkr.ecr.us-east-1.amazonaws.com/my-app
+  tag: latest
   pullPolicy: Always
 
-# -- Replica settings (overridden by HPA)
+# -- Replica settings (gerenciado pelo HPA quando habilitado)
 replicaCount: 1
 
 # -- Argo Rollout strategy
@@ -21,6 +21,10 @@ rollout:
     canary:
       maxSurge: "25%"
       maxUnavailable: 0
+      # steps são opcionais — sem steps o Argo promove 100% imediatamente
+      # steps:
+      #   - setWeight: 25
+      #   - pause: {}
 
 # -- Container resources
 resources:
@@ -55,7 +59,7 @@ securityContext:
   allowPrivilegeEscalation: false
   runAsUser: 1001
 
-# -- Reloader annotations
+# -- Reloader (Stakater) — reinicia pods ao detectar mudanças em ConfigMap/Secret
 reloader:
   enabled: true
   strategy: restart
@@ -65,26 +69,27 @@ service:
   port: 80
   targetPort: 8080
 
-# -- Ingress settings
+# -- Ingress settings (AWS ALB)
 ingress:
   enabled: true
   ingressClassName: alb
   annotations:
-    alb.ingress.kubernetes.io/group.name: axxis-app
+    alb.ingress.kubernetes.io/group.name: ""
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/load-balancer-name: axxispay-helm-template
+    alb.ingress.kubernetes.io/load-balancer-name: ""
     alb.ingress.kubernetes.io/listen-ports: "[{\"HTTP\":80},{\"HTTPS\":443}]"
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:636155393863:certificate/89d6296b-c677-4846-808a-5fea7a5ee620
+    alb.ingress.kubernetes.io/certificate-arn: ""   # obrigatório: arn:aws:acm:<region>:<account>:certificate/<id>
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
     alb.ingress.kubernetes.io/backend-protocol: HTTP
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
     alb.ingress.kubernetes.io/healthcheck-path: /health
     alb.ingress.kubernetes.io/success-codes: "200-399"
-  hosts:
-    - host: api.homolog.bnscred.com.br
-    - host: api-preview.homolog.bnscred.com.br
-      serviceName: axxispay-helm-template-preview  # aponta para release separada do preview
+  hosts: []
+  # hosts:
+  #   - host: app.example.com
+  #   - host: app-preview.example.com
+  #     serviceName: my-app-preview   # informar apenas quando apontar para outra release
 
 # -- HPA settings
 hpa:
@@ -112,29 +117,24 @@ hpa:
           value: 100
           periodSeconds: 15
 
-# -- ConfigMap env vars
+# -- ConfigMap env vars (variáveis não sensíveis)
 configmap:
   enabled: true
-  data:
-    BFF_PORT: "8080"
-    BACKEND_ADIANTAMENTO_URL: "http://axxis-app-ads/api/v1"
-    BACKEND_BNS_URL: "http://axxis-bns-api/api/v1"
-    BNS_API_BASE_URL: "http://axxis-bns-api/api/v1"
-    BNS_OAUTH_CLIENT_ID: "adiantamento-salario"
+  data: {}
+  # data:
+  #   APP_PORT: "8080"
+  #   BACKEND_URL: "http://my-service/api/v1"
 
-# -- ExternalSecret settings
+# -- ExternalSecret — AWS Secrets Manager via ESO (>= v0.10)
 externalSecret:
   enabled: true
-  refreshInterval: 30s
+  refreshInterval: 1h
   secretStoreRef:
     kind: ClusterSecretStore
-    name: bns-apps
+    name: ""   # obrigatório: nome do ClusterSecretStore configurado no cluster
   target:
     creationPolicy: Owner
-  dataFrom:
-    - extract:
-        key: bns/bns-bff
-
-# -- Preview variant (for canary/preview ingress)
-preview:
-  enabled: false
+  dataFrom: []
+  # dataFrom:
+  #   - extract:
+  #       key: my-namespace/my-app-secrets

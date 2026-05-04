@@ -60,9 +60,9 @@ axxispay-helm-template/
 O `Release.Name` (primeiro argumento do `helm install`) nomeia todos os recursos criados:
 
 ```bash
-helm upgrade --install axxis-bns-bff .
-# Cria: Rollout/axxis-bns-bff, Service/axxis-bns-bff, Ingress/axxis-bns-bff,
-#        HPA/axxis-bns-bff, ConfigMap/axxis-bns-bff, ExternalSecret/axxis-bns-bff
+helm upgrade --install my-app .
+# Cria: Rollout/my-app, Service/my-app, Ingress/my-app,
+#        HPA/my-app, ConfigMap/my-app, ExternalSecret/my-app
 ```
 
 ## Publicando uma nova versão
@@ -131,6 +131,38 @@ helm repo update
 helm search repo axxispay
 ```
 
+## Desenvolvimento local
+
+Comandos úteis para validar o chart antes de fazer push:
+
+```bash
+# Verifica erros de sintaxe e boas práticas
+helm lint charts/axxispay
+
+# Renderiza os manifests sem aplicar no cluster (dry-run)
+helm template my-app charts/axxispay \
+  --set image.repository=placeholder/my-app \
+  --set namespace=bns \
+  --set ingress.annotations."alb\.ingress\.kubernetes\.io/certificate-arn"=arn:fake \
+  --set ingress.annotations."alb\.ingress\.kubernetes\.io/group\.name"=axxis-app \
+  --set ingress.annotations."alb\.ingress\.kubernetes\.io/load-balancer-name"=my-app \
+  --set externalSecret.secretStoreRef.name=bns-apps
+
+# Renderiza usando um values file de exemplo
+helm template my-app charts/axxispay -f examples/axxis-bns-api/values-homolog.yaml
+
+# Empacota o chart em um .tgz
+helm package charts/axxispay
+
+# Gera o index.yaml para o repositório Helm
+helm repo index . --url https://github.com/<org>/<repo>
+
+# Verifica o diff antes de aplicar em um cluster (requer helm-diff plugin)
+helm diff upgrade my-app axxispay/helm-template -f examples/axxis-bns-api/values-homolog.yaml
+```
+
+> Os workflows de CI executam `lint`, `template` e `package` automaticamente em todo PR e push para `main`.
+
 ## Deploy
 
 ### Homolog
@@ -177,20 +209,20 @@ helm upgrade --install axxis-bns-card axxispay/helm-template \
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: axxis-bns-bff
+  name: <app-name>
   namespace: argocd
 spec:
   destination:
-    namespace: bns
+    namespace: <namespace>
     server: https://kubernetes.default.svc
   source:
     repoURL: <helm-repo-url>
     chart: axxispay/helm-template
     targetRevision: 0.1.0
     helm:
-      releaseName: axxis-bns-bff
+      releaseName: <app-name>
       valueFiles:
-        - examples/axxis-bns-bff/values-homolog.yaml
+        - examples/<app-name>/values-homolog.yaml
       parameters:
         - name: image.tag
           value: $ARGOCD_APP_REVISION

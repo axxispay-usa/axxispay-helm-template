@@ -1,0 +1,40 @@
+name: CI — Helm Lint & Template
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    paths:
+      - 'charts/**'
+      - 'examples/**'
+
+jobs:
+  lint-and-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint
+        run: helm lint charts/axxispay
+
+      - name: Template (dry-run)
+        run: |
+          helm template axxispay charts/axxispay \
+            --set image.repository=placeholder/my-app \
+            --set namespace=bns \
+            --set ingress.annotations."alb\.ingress\.kubernetes\.io/certificate-arn"=arn:aws:acm:us-east-1:000000000000:certificate/fake \
+            --set ingress.annotations."alb\.ingress\.kubernetes\.io/group\.name"=axxis-app \
+            --set ingress.annotations."alb\.ingress\.kubernetes\.io/load-balancer-name"=my-app \
+            --set externalSecret.secretStoreRef.name=bns-apps
+
+      - name: Package (validação)
+        run: |
+          helm package charts/axxispay --destination /tmp/helm-packages
+          ls -lh /tmp/helm-packages/

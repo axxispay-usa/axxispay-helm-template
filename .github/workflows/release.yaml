@@ -25,7 +25,7 @@ jobs:
         uses: azure/setup-helm@v4
 
       - name: Lint chart
-        run: helm lint .
+        run: helm lint charts/axxispay
 
       - name: Install chart-releaser
         run: |
@@ -45,7 +45,7 @@ jobs:
           fi
 
       - name: Package chart
-        run: cr package .
+        run: cr package charts/axxispay
 
       - name: Upload chart package to GitHub Release
         run: |
