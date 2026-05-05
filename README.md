@@ -2,19 +2,23 @@
 
 Repositório do Helm chart genérico da Axxispay. Um único chart atende todas as aplicações — cada app configura apenas o que é específico dela via `values.yaml`.
 
-## Repositório Helm
+## Instalação via OCI
 
 ```bash
-helm repo add axxispay https://axxispay-usa.github.io/axxispay-helm-template/
-helm repo update
-helm search repo axxispay
+# Helm >= 3.8
+helm install <app-name> oci://ghcr.io/axxispay-usa/axxispay-helm-template \
+  --version <version> \
+  -f my-values.yaml \
+  --namespace <namespace> \
+  --create-namespace
 ```
 
 ## Quick start
 
 ```bash
-helm upgrade --install <app-name> axxispay/axxispay-helm-template \
-  -f charts/axxispay/examples/<app-name>/values-homolog.yaml \
+helm upgrade --install <app-name> oci://ghcr.io/axxispay-usa/axxispay-helm-template \
+  --version <version> \
+  -f charts/axxispay/examples/my-api/values-homolog.yaml \
   --namespace <namespace> \
   --create-namespace
 ```
@@ -28,19 +32,17 @@ helm upgrade --install <app-name> axxispay/axxispay-helm-template \
 │       ├── Chart.yaml
 │       ├── values.yaml         # valores padrão (base para todas as apps)
 │       ├── templates/          # rollout, service, ingress, hpa, configmap, external-secret
-│       └── examples/           # values por aplicação e ambiente
+│       └── examples/           # values de referência por tipo de app
 │           ├── values-reference.yaml
-│           ├── axxis-bns-api/
-│           ├── axxis-bns-bff/
-│           ├── axxis-bns-ads/
-│           └── axxis-bns-card/
+│           ├── my-api/
+│           ├── my-bff/
+│           └── my-worker/
 ├── .github/
 │   └── workflows/
 │       ├── release-please.yaml # abre PR de release automaticamente
-│       ├── release.yaml        # empacota e publica no Helm repo
+│       ├── release.yaml        # empacota e publica no GHCR (OCI)
 │       └── ci.yaml             # lint, template e package em todo PR
-├── release-please-config.json
-└── index.yaml                  # índice do repositório Helm (gh-pages)
+└── release-please-config.json
 ```
 
 ## Documentação completa
