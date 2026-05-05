@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-test
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:axxispay-usa/axxispay-helm-template.git
+    targetRevision: main
+    path: charts/axxispay
+    helm:
+      releaseName: nginx-test
+      values: |
+        namespace: bns
+        image:
+          repository: nginx
+          tag: latest
+          pullPolicy: Always
+        containerPort: 80
+        service:
+          port: 80
+          targetPort: 80
+        probes:
+          liveness:
+            path: /
+            port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readiness:
+            path: /
+            port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+        ingress:
+          enabled: false
+        externalSecret:
+          enabled: false
+        configmap:
+          enabled: false
+        hpa:
+          enabled: false
+        reloader:
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bns
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
