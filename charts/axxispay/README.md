@@ -19,7 +19,7 @@ Com Helm + ArgoCD, a lógica vive em um único lugar e cada aplicação só desc
 | **Diff antes de aplicar** | `kubectl diff` limitado | `helm diff upgrade` mostra exatamente o que vai mudar |
 | **Validação local** | Nenhuma sem cluster | `helm template` + `helm lint` sem precisar de cluster |
 
-### No contexto da Axxispay
+### Na prática
 
 - Uma nova aplicação entra em produção adicionando apenas uma pasta em `examples/` com dois arquivos de values — sem tocar nos templates.
 - Atualizações de segurança (ex: novo `ssl-policy` do ALB, novo campo no `securityContext`) são aplicadas em um único commit e propagadas para todas as apps no próximo sync do ArgoCD.
@@ -41,16 +41,13 @@ axxispay-helm-template/
 │   └── external-secret.yaml        # ExternalSecret (AWS Secrets Manager via ESO)
 └── examples/
     ├── values-reference.yaml       # referência completa de todos os campos
-    ├── axxis-bns-bff/
+    ├── my-api/
     │   ├── values-homolog.yaml
     │   └── values-prod.yaml
-    ├── axxis-bns-api/
+    ├── my-bff/
     │   ├── values-homolog.yaml
     │   └── values-prod.yaml
-    ├── axxis-bns-ads/
-    │   ├── values-homolog.yaml
-    │   └── values-prod.yaml
-    └── axxis-bns-card/
+    └── my-worker/
         ├── values-homolog.yaml
         └── values-prod.yaml
 ```
@@ -73,7 +70,7 @@ O processo de release é totalmente automatizado via dois workflows:
 commit (feat/fix) → push main → release-please abre PR → merge PR → GitHub Release criada
                                                                             ↓
                                                                release.yaml empacota o chart
-                                                               e publica no gh-pages (Helm repo)
+                                                               e publica no GHCR (OCI)
 ```
 
 ### Workflows
@@ -81,7 +78,7 @@ commit (feat/fix) → push main → release-please abre PR → merge PR → GitH
 | Arquivo | Gatilho | Responsabilidade |
 |---|---|---|
 | `release-please.yaml` | push em `main` | Lê commits, abre/atualiza PR de release com versão bumped e CHANGELOG |
-| `release.yaml` | GitHub Release publicada | Empacota o chart e publica no repositório Helm (gh-pages) |
+| `release.yaml` | GitHub Release publicada | Empacota o chart e publica no GHCR como imagem OCI |
 
 ### Como funciona na prática
 
@@ -107,28 +104,32 @@ Ao mergear esse PR, a GitHub Release é criada automaticamente e o `release.yaml
 
 ### Configuração necessária no GitHub (uma única vez)
 
-- `Settings → Pages → Source`: branch `gh-pages`, pasta `/root`
 - `Settings → Actions → General → Workflow permissions`: `Read and write permissions`
+- O `GITHUB_TOKEN` padrão já inclui `packages: write` — nenhum secret adicional necessário.
 
-### Via comando (release manual)
+### Via comando (publish manual de uma versão)
 
 ```bash
-VERSION=1.6.1
-curl -sSL "https://github.com/helm/chart-releaser/releases/download/v${VERSION}/chart-releaser_${VERSION}_linux_amd64.tar.gz" \
-  | tar -xz cr && sudo mv cr /usr/local/bin/cr
+# Necessita PAT com escopo write:packages
+export GHCR_TOKEN=<seu-pat>
+echo "$GHCR_TOKEN" | helm registry login ghcr.io --username <github-user> --password-stdin
 
-cr package .
-cr upload --owner <org> --git-repo <repo> --token <GITHUB_TOKEN>
-cr index  --owner <org> --git-repo <repo> --token <GITHUB_TOKEN> \
-          --pages-branch gh-pages --push
+helm package charts/axxispay
+helm push axxispay-helm-template-*.tgz oci://ghcr.io/<org>
 ```
 
-### Adicionando o repositório no Helm
+### Usando o chart via OCI
 
 ```bash
-helm repo add axxispay https://<org>.github.io/<repo>
-helm repo update
-helm search repo axxispay
+# Helm (>= 3.8)
+helm install my-app oci://ghcr.io/<org>/axxispay-helm-template --version 0.2.0 \
+  -f my-values.yaml --namespace my-namespace
+
+# ArgoCD Application
+# source:
+#   chart: axxispay-helm-template
+#   repoURL: oci://ghcr.io/<org>/axxispay-helm-template
+#   targetRevision: 0.2.0
 ```
 
 ## Desenvolvimento local
@@ -149,7 +150,7 @@ helm template my-app charts/axxispay \
   --set externalSecret.secretStoreRef.name=bns-apps
 
 # Renderiza usando um values file de exemplo
-helm template my-app charts/axxispay -f examples/axxis-bns-api/values-homolog.yaml
+helm template my-app charts/axxispay -f examples/my-api/values-homolog.yaml
 
 # Empacota o chart em um .tgz
 helm package charts/axxispay
@@ -158,7 +159,7 @@ helm package charts/axxispay
 helm repo index . --url https://github.com/<org>/<repo>
 
 # Verifica o diff antes de aplicar em um cluster (requer helm-diff plugin)
-helm diff upgrade my-app axxispay/helm-template -f examples/axxis-bns-api/values-homolog.yaml
+helm diff upgrade my-app oci://ghcr.io/<org>/axxispay-helm-template --version 0.2.0 -f examples/my-api/values-homolog.yaml
 ```
 
 > Os workflows de CI executam `lint`, `template` e `package` automaticamente em todo PR e push para `main`.
@@ -183,24 +184,16 @@ helm upgrade --install <app-name> axxispay/helm-template \
   --namespace bns
 ```
 
-### Exemplos por aplicação
+### Exemplos
 
 ```bash
-# axxis-bns-bff
-helm upgrade --install axxis-bns-bff axxispay/helm-template \
-  -f examples/axxis-bns-bff/values-homolog.yaml --namespace bns
+# API
+helm upgrade --install my-api oci://ghcr.io/<org>/axxispay-helm-template --version 0.2.0 \
+  -f examples/my-api/values-homolog.yaml --namespace my-namespace
 
-# axxis-bns-api
-helm upgrade --install axxis-bns-api axxispay/helm-template \
-  -f examples/axxis-bns-api/values-homolog.yaml --namespace bns
-
-# axxis-bns-ads
-helm upgrade --install axxis-bns-ads axxispay/helm-template \
-  -f examples/axxis-bns-ads/values-homolog.yaml --namespace bns
-
-# axxis-bns-card
-helm upgrade --install axxis-bns-card axxispay/helm-template \
-  -f examples/axxis-bns-card/values-homolog.yaml --namespace bns
+# BFF
+helm upgrade --install my-bff oci://ghcr.io/<org>/axxispay-helm-template --version 0.2.0 \
+  -f examples/my-bff/values-homolog.yaml --namespace my-namespace
 ```
 
 ## ArgoCD
