@@ -5,7 +5,7 @@ metadata:
   namespace: argocd
   annotations:
     # argocd-image-updater monitora o ECR e atualiza image.tag automaticamente
-    argocd-image-updater.argoproj.io/image-list: axxis-app=636155393863.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-bff
+    argocd-image-updater.argoproj.io/image-list: axxis-app=000000000000.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-bff
     argocd-image-updater.argoproj.io/axxis-app.update-strategy: digest
     argocd-image-updater.argoproj.io/axxis-app.helm.image-name: image.repository
     argocd-image-updater.argoproj.io/axxis-app.helm.image-tag: image.tag

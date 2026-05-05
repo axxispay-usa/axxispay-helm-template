@@ -3,12 +3,12 @@
 namespace: bns
 
 image:
-  repository: 636155393863.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-api
+  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-api
   tag: homolog
 
 ingress:
   hosts:
-    - host: api.homolog.bnscred.com.br
+    - host: api.homolog.example.com
 
 hpa:
   minReplicas: 1
@@ -18,9 +18,9 @@ externalSecret:
   refreshInterval: 5m
   dataFrom:
     - extract:
-        key: bns/axxis-bns-api
+        key: namespace/app-name
 
 configmap:
   data:
     APP_PORT: "8080"
-    DATABASE_URL: "jdbc:postgresql://axxis-bns-db:5432/bns"
+    DATABASE_URL: "jdbc:postgresql://db-host:5432/db-name"

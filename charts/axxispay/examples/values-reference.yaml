@@ -16,7 +16,7 @@ namespace: my-namespace
 # Image
 # ------------------------------------------------------------------------------
 image:
-  repository: 636155393863.dkr.ecr.us-east-1.amazonaws.com/my-app
+  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/my-app
   tag: "abc123"        # sempre substituir pela tag real no CI/CD (git SHA)
   pullPolicy: Always   # Always | IfNotPresent | Never
 

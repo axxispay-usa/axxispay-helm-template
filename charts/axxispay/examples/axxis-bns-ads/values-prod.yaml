@@ -3,12 +3,12 @@
 namespace: bns
 
 image:
-  repository: 636155393863.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-ads
+  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-ads
   tag: latest
 
 ingress:
   hosts:
-    - host: ads.bnscred.com.br
+    - host: ads.example.com
 
 hpa:
   minReplicas: 2
@@ -25,9 +25,9 @@ externalSecret:
   refreshInterval: 1h
   dataFrom:
     - extract:
-        key: bns/axxis-bns-ads
+        key: namespace/app-name
 
 configmap:
   data:
     APP_PORT: "8080"
-    BACKEND_BNS_URL: "http://axxis-bns-api/api/v1"
+    BACKEND_BNS_URL: "http://backend-service/api/v1"

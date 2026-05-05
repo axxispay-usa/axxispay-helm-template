@@ -3,13 +3,13 @@
 namespace: bns
 
 image:
-  repository: 636155393863.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-bff
+  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-bff
   tag: homolog
 
 ingress:
   hosts:
-    - host: bff.homolog.bnscred.com.br
-    - host: bff-preview.homolog.bnscred.com.br
+    - host: bff.homolog.example.com
+    - host: bff-preview.homolog.example.com
       serviceName: axxis-bns-bff-preview
 
 hpa:
@@ -20,12 +20,12 @@ externalSecret:
   refreshInterval: 5m
   dataFrom:
     - extract:
-        key: bns/axxis-bns-bff
+        key: namespace/app-name
 
 configmap:
   data:
     BFF_PORT: "8080"
-    BACKEND_ADIANTAMENTO_URL: "http://axxis-bns-ads/api/v1"
-    BACKEND_BNS_URL: "http://axxis-bns-api/api/v1"
-    BNS_API_BASE_URL: "http://axxis-bns-api/api/v1"
+    BACKEND_ADIANTAMENTO_URL: "http://ads-service/api/v1"
+    BACKEND_BNS_URL: "http://backend-service/api/v1"
+    BNS_API_BASE_URL: "http://backend-service/api/v1"
     BNS_OAUTH_CLIENT_ID: "adiantamento-salario"
