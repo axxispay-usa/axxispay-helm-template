@@ -3,12 +3,12 @@ entries:
   axxispay-helm-template:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-05-04T16:58:54.958580317-03:00"
-    description: Helm chart for axxispay-helm-template (BFF service)
-    digest: 546e5bf7f6591b617fc447439d7dc40c7f07fbf049b7820eca77b5093b725f01
+    created: "2026-05-05T10:23:38.715503596-03:00"
+    description: Helm chart genérico para as aplicações da Axxispay
+    digest: a2c12fb85a4f1133e316da2d70187817f003de81ee1b849ff533b958eae0cbd3
     name: axxispay-helm-template
     type: application
     urls:
     - https://axxispay-usa.github.io/axxispay-helm-template/axxispay-helm-template-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-04T16:58:54.957900534-03:00"
+generated: "2026-05-05T10:23:38.714251862-03:00"

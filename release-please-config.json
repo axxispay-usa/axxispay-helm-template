@@ -1,0 +1,8 @@
+{
+  "packages": {
+    "charts/axxispay": {
+      "release-type": "helm",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
