@@ -1,9 +1,9 @@
-# Deploy: helm upgrade --install axxis-bns-api axxispay/helm-template -f values-homolog.yaml
-# Todos os recursos serão criados com o nome: axxis-bns-api
+# Deploy: helm upgrade --install my-api axxispay/helm-template -f values-homolog.yaml
+# Todos os recursos serão criados com o nome: my-api
 namespace: bns
 
 image:
-  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-api
+  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/my-api
   tag: homolog
 
 ingress:

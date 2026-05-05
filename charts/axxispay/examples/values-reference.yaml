@@ -103,7 +103,7 @@ ingress:
   enabled: true
   ingressClassName: alb
   annotations:
-    alb.ingress.kubernetes.io/group.name: axxis-app
+    alb.ingress.kubernetes.io/group.name: my-app
     alb.ingress.kubernetes.io/scheme: internet-facing       # internet-facing | internal
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/load-balancer-name: my-app

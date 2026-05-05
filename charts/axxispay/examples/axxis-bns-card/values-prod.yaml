@@ -1,9 +1,9 @@
-# Deploy: helm upgrade --install axxis-bns-card axxispay/helm-template -f values-prod.yaml --set image.tag=<GIT_SHA>
-# Todos os recursos serão criados com o nome: axxis-bns-card
+# Deploy: helm upgrade --install my-service axxispay/helm-template -f values-prod.yaml --set image.tag=<GIT_SHA>
+# Todos os recursos serão criados com o nome: my-service
 namespace: bns
 
 image:
-  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-card
+  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/my-service
   tag: latest
 
 ingress:

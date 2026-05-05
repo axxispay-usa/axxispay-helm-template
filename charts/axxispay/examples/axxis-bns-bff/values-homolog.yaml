@@ -1,16 +1,16 @@
-# Deploy: helm upgrade --install axxis-bns-bff axxispay/helm-template -f values-homolog.yaml
-# Todos os recursos serão criados com o nome: axxis-bns-bff
+# Deploy: helm upgrade --install my-bff axxispay/helm-template -f values-homolog.yaml
+# Todos os recursos serão criados com o nome: my-bff
 namespace: bns
 
 image:
-  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/axxis-bns-bff
+  repository: 000000000000.dkr.ecr.us-east-1.amazonaws.com/my-bff
   tag: homolog
 
 ingress:
   hosts:
     - host: bff.homolog.example.com
     - host: bff-preview.homolog.example.com
-      serviceName: axxis-bns-bff-preview
+      serviceName: my-app-preview
 
 hpa:
   minReplicas: 1
