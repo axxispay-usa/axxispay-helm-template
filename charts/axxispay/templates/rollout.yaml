@@ -23,6 +23,9 @@ spec:
       labels:
         {{- include "axxispay-helm-template.selectorLabels" . | nindent 8 }}
     spec:
+      {{- if .Values.serviceAccount.enabled }}
+      serviceAccountName: {{ include "axxispay-helm-template.fullname" . }}
+      {{- end }}
       containers:
         - name: {{ include "axxispay-helm-template.fullname" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

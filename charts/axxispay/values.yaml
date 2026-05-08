@@ -14,6 +14,11 @@ image:
 # -- Replica settings (gerenciado pelo HPA quando habilitado)
 replicaCount: 1
 
+# -- ServiceAccount com suporte a IRSA (IAM Roles for Service Accounts)
+serviceAccount:
+  enabled: false
+  annotations: {}
+
 # -- Argo Rollout strategy
 rollout:
   enabled: true
