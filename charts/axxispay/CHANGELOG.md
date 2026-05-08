@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/axxispay-usa/axxispay-helm-template/compare/axxispay-helm-template-v0.7.0...axxispay-helm-template-v0.8.0) (2026-05-08)
+
+
+### Features
+
+* probes default to false ([ccd2a62](https://github.com/axxispay-usa/axxispay-helm-template/commit/ccd2a62ff61479918eea73485d90d969960e017b))
+
 ## [0.7.0](https://github.com/axxispay-usa/axxispay-helm-template/compare/axxispay-helm-template-v0.6.0...axxispay-helm-template-v0.7.0) (2026-05-08)
 
 
