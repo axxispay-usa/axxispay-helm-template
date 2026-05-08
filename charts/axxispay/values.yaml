@@ -19,6 +19,9 @@ serviceAccount:
   enabled: false
   annotations: {}
 
+# -- Pod-level security context (runAsUser, runAsGroup, fsGroup)
+podSecurityContext: {}
+
 # -- Argo Rollout strategy
 rollout:
   enabled: true
@@ -73,6 +76,8 @@ reloader:
 service:
   port: 80
   targetPort: 8080
+  preview:
+    enabled: false
 
 # -- Ingress settings (AWS ALB)
 ingress:

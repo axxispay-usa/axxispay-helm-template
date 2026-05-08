@@ -26,6 +26,10 @@ spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "axxispay-helm-template.fullname" . }}
       {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ include "axxispay-helm-template.fullname" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

@@ -1,0 +1,17 @@
+{{- if .Values.service.preview.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "axxispay-helm-template.fullname" . }}-preview
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "axxispay-helm-template.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "axxispay-helm-template.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+{{- end }}
