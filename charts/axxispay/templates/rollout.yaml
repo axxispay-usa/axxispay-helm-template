@@ -12,6 +12,9 @@ metadata:
     reloader.stakater.com/rollout-strategy: {{ .Values.reloader.strategy }}
     {{- end }}
 spec:
+  {{- if not .Values.hpa.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "axxispay-helm-template.selectorLabels" . | nindent 6 }}
