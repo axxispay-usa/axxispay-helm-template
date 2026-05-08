@@ -1,0 +1,11 @@
+{{- if .Values.preview.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "axxispay-helm-template.fullname" . }}-preview
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "axxispay-helm-template.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.preview.configmap.data | nindent 2 }}
+{{- end }}

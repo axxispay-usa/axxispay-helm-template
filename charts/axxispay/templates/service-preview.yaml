@@ -8,7 +8,11 @@ metadata:
     {{- include "axxispay-helm-template.labels" . | nindent 4 }}
 spec:
   selector:
+    {{- if .Values.preview.enabled }}
+    {{- include "axxispay-helm-template.previewSelectorLabels" . | nindent 4 }}
+    {{- else }}
     {{- include "axxispay-helm-template.selectorLabels" . | nindent 4 }}
+    {{- end }}
   ports:
     - name: http
       port: {{ .Values.service.port }}

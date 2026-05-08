@@ -22,6 +22,12 @@ serviceAccount:
 # -- Pod-level security context (runAsUser, runAsGroup, fsGroup)
 podSecurityContext: {}
 
+# -- Preview deployment separado (Rollout + ConfigMap com labels distintos)
+preview:
+  enabled: false
+  configmap:
+    data: {}
+
 # -- Argo Rollout strategy
 rollout:
   enabled: true

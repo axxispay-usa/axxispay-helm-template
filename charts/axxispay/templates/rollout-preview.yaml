@@ -1,0 +1,67 @@
+{{- if .Values.preview.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ include "axxispay-helm-template.fullname" . }}-preview
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "axxispay-helm-template.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.reloader.enabled }}
+    reloader.stakater.com/auto: "true"
+    reloader.stakater.com/rollout-strategy: {{ .Values.reloader.strategy }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "axxispay-helm-template.previewSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "axxispay-helm-template.previewSelectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.serviceAccount.enabled }}
+      serviceAccountName: {{ include "axxispay-helm-template.fullname" . }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ include "axxispay-helm-template.fullname" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "axxispay-helm-template.fullname" . }}-preview
+            {{- if .Values.externalSecret.enabled }}
+            - secretRef:
+                name: {{ include "axxispay-helm-template.fullname" . }}
+            {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: {{ .Values.probes.liveness.port }}
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: {{ .Values.probes.readiness.port }}
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+  strategy:
+    canary:
+      maxSurge: {{ .Values.rollout.strategy.canary.maxSurge | quote }}
+      maxUnavailable: {{ .Values.rollout.strategy.canary.maxUnavailable }}
+{{- end }}

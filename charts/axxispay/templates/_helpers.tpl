@@ -36,3 +36,11 @@ Selector labels
 app: {{ include "axxispay-helm-template.fullname" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Preview selector labels
+*/}}
+{{- define "axxispay-helm-template.previewSelectorLabels" -}}
+app: {{ include "axxispay-helm-template.fullname" . }}-preview
+app.kubernetes.io/instance: {{ .Release.Name }}-preview
+{{- end }}
