@@ -34,6 +34,7 @@ preview:
 # -- Argo Rollout strategy
 rollout:
   enabled: true
+  revisionHistoryLimit: 3
   strategy:
     canary:
       maxSurge: "25%"

@@ -12,6 +12,7 @@ metadata:
     reloader.stakater.com/rollout-strategy: {{ .Values.reloader.strategy }}
     {{- end }}
 spec:
+  revisionHistoryLimit: {{ .Values.rollout.revisionHistoryLimit }}
   {{- if not .Values.hpa.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
