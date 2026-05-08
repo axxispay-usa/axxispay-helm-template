@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/axxispay-usa/axxispay-helm-template/compare/axxispay-helm-template-v0.4.0...axxispay-helm-template-v0.5.0) (2026-05-08)
+
+
+### Features
+
+* upgrade config ([773c1d1](https://github.com/axxispay-usa/axxispay-helm-template/commit/773c1d156502feb9b7a5eb2bdea3477eab3e3c59))
+
 ## [0.4.0](https://github.com/axxispay-usa/axxispay-helm-template/compare/axxispay-helm-template-v0.3.0...axxispay-helm-template-v0.4.0) (2026-05-08)
 
 
