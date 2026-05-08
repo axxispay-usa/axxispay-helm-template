@@ -18,7 +18,7 @@ helm install <app-name> oci://ghcr.io/axxispay-usa/axxispay-helm-template \
 ```bash
 helm upgrade --install <app-name> oci://ghcr.io/axxispay-usa/axxispay-helm-template \
   --version <version> \
-  -f charts/axxispay/examples/my-api/values-homolog.yaml \
+  -f charts/axxispay/examples/axxis-bns-api/values-homolog.yaml \
   --namespace <namespace> \
   --create-namespace
 ```
@@ -31,12 +31,15 @@ helm upgrade --install <app-name> oci://ghcr.io/axxispay-usa/axxispay-helm-templ
 │   └── axxispay/               # Helm chart
 │       ├── Chart.yaml
 │       ├── values.yaml         # valores padrão (base para todas as apps)
-│       ├── templates/          # rollout, service, ingress, hpa, configmap, external-secret
-│       └── examples/           # values de referência por tipo de app
+│       ├── templates/          # rollout, rollout-preview, service, service-preview,
+│       │                       # ingress, hpa, configmap, configmap-preview,
+│       │                       # external-secret, service-account
+│       └── examples/           # values de referência por aplicação
 │           ├── values-reference.yaml
-│           ├── my-api/
-│           ├── my-bff/
-│           └── my-worker/
+│           ├── axxis-bns-ads/
+│           ├── axxis-bns-api/
+│           ├── axxis-bns-bff/
+│           └── axxis-bns-card/
 ├── .github/
 │   └── workflows/
 │       ├── release-please.yaml # abre PR de release automaticamente

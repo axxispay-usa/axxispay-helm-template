@@ -34,20 +34,27 @@ axxispay-helm-template/
 ├── templates/
 │   ├── _helpers.tpl                # funções auxiliares (fullname, labels)
 │   ├── rollout.yaml                # Argo Rollout com estratégia canary
+│   ├── rollout-preview.yaml        # Rollout isolado para ambiente de preview
 │   ├── service.yaml                # Service ClusterIP
+│   ├── service-preview.yaml        # Service para o Rollout de preview
 │   ├── ingress.yaml                # Ingress AWS ALB
 │   ├── hpa.yaml                    # HorizontalPodAutoscaler v2
 │   ├── configmap.yaml              # ConfigMap com variáveis não sensíveis
-│   └── external-secret.yaml        # ExternalSecret (AWS Secrets Manager via ESO)
+│   ├── configmap-preview.yaml      # ConfigMap para o ambiente de preview
+│   ├── external-secret.yaml        # ExternalSecret (AWS Secrets Manager via ESO)
+│   └── service-account.yaml        # ServiceAccount com suporte a IRSA
 └── examples/
     ├── values-reference.yaml       # referência completa de todos os campos
-    ├── my-api/
+    ├── axxis-bns-ads/
     │   ├── values-homolog.yaml
     │   └── values-prod.yaml
-    ├── my-bff/
+    ├── axxis-bns-api/
     │   ├── values-homolog.yaml
     │   └── values-prod.yaml
-    └── my-worker/
+    ├── axxis-bns-bff/
+    │   ├── values-homolog.yaml
+    │   └── values-prod.yaml
+    └── axxis-bns-card/
         ├── values-homolog.yaml
         └── values-prod.yaml
 ```
@@ -115,21 +122,21 @@ export GHCR_TOKEN=<seu-pat>
 echo "$GHCR_TOKEN" | helm registry login ghcr.io --username <github-user> --password-stdin
 
 helm package charts/axxispay
-helm push axxispay-helm-template-*.tgz oci://ghcr.io/<org>
+helm push axxispay-helm-template-*.tgz oci://ghcr.io/axxispay-usa
 ```
 
 ### Usando o chart via OCI
 
 ```bash
 # Helm (>= 3.8)
-helm install my-app oci://ghcr.io/<org>/axxispay-helm-template --version 0.2.0 \
+helm install my-app oci://ghcr.io/axxispay-usa/axxispay-helm-template --version 0.10.0 \
   -f my-values.yaml --namespace my-namespace
 
-# ArgoCD Application
+# ArgoCD Application (via OCI)
 # source:
 #   chart: axxispay-helm-template
-#   repoURL: oci://ghcr.io/<org>/axxispay-helm-template
-#   targetRevision: 0.2.0
+#   repoURL: oci://ghcr.io/axxispay-usa/axxispay-helm-template
+#   targetRevision: 0.10.0
 ```
 
 ## Desenvolvimento local
@@ -150,16 +157,13 @@ helm template my-app charts/axxispay \
   --set externalSecret.secretStoreRef.name=bns-apps
 
 # Renderiza usando um values file de exemplo
-helm template my-app charts/axxispay -f examples/my-api/values-homolog.yaml
+helm template my-app charts/axxispay -f examples/axxis-bns-api/values-homolog.yaml
 
 # Empacota o chart em um .tgz
 helm package charts/axxispay
 
-# Gera o index.yaml para o repositório Helm
-helm repo index . --url https://github.com/<org>/<repo>
-
 # Verifica o diff antes de aplicar em um cluster (requer helm-diff plugin)
-helm diff upgrade my-app oci://ghcr.io/<org>/axxispay-helm-template --version 0.2.0 -f examples/my-api/values-homolog.yaml
+helm diff upgrade my-app oci://ghcr.io/axxispay-usa/axxispay-helm-template --version 0.10.0 -f examples/axxis-bns-api/values-homolog.yaml
 ```
 
 > Os workflows de CI executam `lint`, `template` e `package` automaticamente em todo PR e push para `main`.
@@ -169,7 +173,8 @@ helm diff upgrade my-app oci://ghcr.io/<org>/axxispay-helm-template --version 0.
 ### Homolog
 
 ```bash
-helm upgrade --install <app-name> axxispay/helm-template \
+helm upgrade --install <app-name> oci://ghcr.io/axxispay-usa/axxispay-helm-template \
+  --version 0.10.0 \
   -f examples/<app-name>/values-homolog.yaml \
   --namespace bns \
   --create-namespace
@@ -178,25 +183,16 @@ helm upgrade --install <app-name> axxispay/helm-template \
 ### Produção
 
 ```bash
-helm upgrade --install <app-name> axxispay/helm-template \
+helm upgrade --install <app-name> oci://ghcr.io/axxispay-usa/axxispay-helm-template \
+  --version 0.10.0 \
   -f examples/<app-name>/values-prod.yaml \
   --set image.tag=$(git rev-parse --short HEAD) \
   --namespace bns
 ```
 
-### Exemplos
-
-```bash
-# API
-helm upgrade --install my-api oci://ghcr.io/<org>/axxispay-helm-template --version 0.2.0 \
-  -f examples/my-api/values-homolog.yaml --namespace my-namespace
-
-# BFF
-helm upgrade --install my-bff oci://ghcr.io/<org>/axxispay-helm-template --version 0.2.0 \
-  -f examples/my-bff/values-homolog.yaml --namespace my-namespace
-```
-
 ## ArgoCD
+
+O ArgoCD aponta para o repositório Git, usando o chart diretamente via `path`:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -204,38 +200,50 @@ kind: Application
 metadata:
   name: <app-name>
   namespace: argocd
+  annotations:
+    # argocd-image-updater monitora o ECR e atualiza image.tag automaticamente
+    argocd-image-updater.argoproj.io/image-list: app=<ecr-uri>/<app-name>
+    argocd-image-updater.argoproj.io/app.update-strategy: digest
+    argocd-image-updater.argoproj.io/app.helm.image-name: image.repository
+    argocd-image-updater.argoproj.io/app.helm.image-tag: image.tag
+    argocd-image-updater.argoproj.io/write-back-method: argocd
 spec:
-  destination:
-    namespace: <namespace>
-    server: https://kubernetes.default.svc
+  project: bns
   source:
-    repoURL: <helm-repo-url>
-    chart: axxispay/helm-template
-    targetRevision: 0.1.0
+    repoURL: git@github.com:axxispay-usa/axxispay-helm-template.git
+    targetRevision: main
+    path: charts/axxispay
     helm:
       releaseName: <app-name>
       valueFiles:
-        - examples/<app-name>/values-homolog.yaml
-      parameters:
-        - name: image.tag
-          value: $ARGOCD_APP_REVISION
+        - ../../examples/<app-name>/values-homolog.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bns
   syncPolicy:
     automated:
-      prune: true
       selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
 ```
 
 ## Principais Values
 
 | Key | Descrição | Default |
 |-----|-----------|---------|
+| `enabled` | Kill switch — `false` impede criação de qualquer recurso | `true` |
 | `image.repository` | Repositório ECR da imagem | — |
-| `image.tag` | Tag da imagem (usar git SHA em prod) | `homolog` |
+| `image.tag` | Tag da imagem (usar git SHA em prod) | `latest` |
 | `image.pullPolicy` | Política de pull | `Always` |
 | `containerPort` | Porta exposta pelo container | `8080` |
+| `replicaCount` | Réplicas fixas (somente quando `hpa.enabled: false`) | `1` |
 | `rollout.enabled` | Habilitar Argo Rollout | `true` |
+| `rollout.revisionHistoryLimit` | Histórico de revisões mantido pelo Rollout | `3` |
 | `rollout.strategy.canary.maxSurge` | Surge do canary | `25%` |
-| `rollout.strategy.canary.steps` | Steps do canary (opcional) | `[]` |
+| `rollout.strategy.canary.steps` | Steps do canary (opcional) | não definido |
+| `probes.liveness.enabled` | Habilitar liveness probe | `false` |
+| `probes.readiness.enabled` | Habilitar readiness probe | `false` |
 | `hpa.enabled` | Habilitar HPA | `true` |
 | `hpa.minReplicas` | Mínimo de réplicas | `1` |
 | `hpa.maxReplicas` | Máximo de réplicas | `3` |
@@ -245,8 +253,11 @@ spec:
 | `configmap.enabled` | Habilitar ConfigMap | `true` |
 | `configmap.data` | Variáveis de ambiente não sensíveis | `{}` |
 | `externalSecret.enabled` | Habilitar ExternalSecret | `true` |
-| `externalSecret.refreshInterval` | Intervalo de sync com Secrets Manager | `30s` |
+| `externalSecret.refreshInterval` | Intervalo de sync com Secrets Manager | `1h` |
 | `externalSecret.dataFrom[].extract.key` | Chave no AWS Secrets Manager | — |
+| `preview.enabled` | Habilitar Rollout e Service de preview isolados | `false` |
+| `preview.configmap.data` | Variáveis de ambiente específicas do preview | `{}` |
+| `serviceAccount.enabled` | Criar ServiceAccount com suporte a IRSA | `false` |
 | `reloader.enabled` | Reiniciar pods ao mudar ConfigMap/Secret | `true` |
 
 ## Requisitos
