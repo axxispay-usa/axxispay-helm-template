@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/axxispay-usa/axxispay-helm-template/compare/axxispay-helm-template-v0.8.0...axxispay-helm-template-v0.9.0) (2026-05-08)
+
+
+### Features
+
+* flag to disable or enable deploy application ([e31c42a](https://github.com/axxispay-usa/axxispay-helm-template/commit/e31c42adc3a5b6d907e3871fc6ad3c9e96d61226))
+
 ## [0.8.0](https://github.com/axxispay-usa/axxispay-helm-template/compare/axxispay-helm-template-v0.7.0...axxispay-helm-template-v0.8.0) (2026-05-08)
 
 
