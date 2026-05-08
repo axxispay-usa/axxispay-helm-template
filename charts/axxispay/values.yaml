@@ -54,7 +54,7 @@ containerPort: 8080
 # -- Health probe settings
 probes:
   liveness:
-    enabled: true
+    enabled: false
     path: /health
     port: 8080
     initialDelaySeconds: 10
@@ -62,7 +62,7 @@ probes:
     timeoutSeconds: 5
     failureThreshold: 3
   readiness:
-    enabled: true
+    enabled: false
     path: /health
     port: 8080
     initialDelaySeconds: 5
