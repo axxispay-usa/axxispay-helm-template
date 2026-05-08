@@ -1,4 +1,4 @@
-{{- if .Values.service.preview.enabled }}
+{{- if and .Values.enabled .Values.service.preview.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,7 +8,7 @@ metadata:
     {{- include "axxispay-helm-template.labels" . | nindent 4 }}
 spec:
   selector:
-    {{- if .Values.preview.enabled }}
+    {{- if and .Values.enabled .Values.preview.enabled }}
     {{- include "axxispay-helm-template.previewSelectorLabels" . | nindent 4 }}
     {{- else }}
     {{- include "axxispay-helm-template.selectorLabels" . | nindent 4 }}

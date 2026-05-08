@@ -1,4 +1,4 @@
-{{- if .Values.rollout.enabled }}
+{{- if and .Values.enabled .Values.rollout.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
@@ -7,7 +7,7 @@ metadata:
   labels:
     {{- include "axxispay-helm-template.labels" . | nindent 4 }}
   annotations:
-    {{- if .Values.reloader.enabled }}
+    {{- if and .Values.enabled .Values.reloader.enabled }}
     reloader.stakater.com/auto: "true"
     reloader.stakater.com/rollout-strategy: {{ .Values.reloader.strategy }}
     {{- end }}
@@ -23,7 +23,7 @@ spec:
       labels:
         {{- include "axxispay-helm-template.selectorLabels" . | nindent 8 }}
     spec:
-      {{- if .Values.serviceAccount.enabled }}
+      {{- if and .Values.enabled .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "axxispay-helm-template.fullname" . }}
       {{- end }}
       {{- with .Values.podSecurityContext }}
@@ -39,17 +39,17 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           envFrom:
-            {{- if .Values.configmap.enabled }}
+            {{- if and .Values.enabled .Values.configmap.enabled }}
             - configMapRef:
                 name: {{ include "axxispay-helm-template.fullname" . }}
             {{- end }}
-            {{- if .Values.externalSecret.enabled }}
+            {{- if and .Values.enabled .Values.externalSecret.enabled }}
             - secretRef:
                 name: {{ include "axxispay-helm-template.fullname" . }}
             {{- end }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          {{- if .Values.probes.liveness.enabled }}
+          {{- if and .Values.enabled .Values.probes.liveness.enabled }}
           livenessProbe:
             httpGet:
               path: {{ .Values.probes.liveness.path }}
@@ -59,7 +59,7 @@ spec:
             timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
             failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
           {{- end }}
-          {{- if .Values.probes.readiness.enabled }}
+          {{- if and .Values.enabled .Values.probes.readiness.enabled }}
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}

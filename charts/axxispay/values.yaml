@@ -2,6 +2,9 @@
 nameOverride: ""
 fullnameOverride: ""
 
+# -- Kill switch: quando false, nenhum recurso é criado no cluster
+enabled: true
+
 # -- Namespace onde os recursos serão criados
 namespace: ""
 
