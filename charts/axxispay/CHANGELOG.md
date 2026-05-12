@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/axxispay-usa/axxispay-helm-template/compare/axxispay-helm-template-v0.10.0...axxispay-helm-template-v0.11.0) (2026-05-12)
+
+
+### Features
+
+* **rollout:** add tolerations support and make securityContext conditional ([a686a9a](https://github.com/axxispay-usa/axxispay-helm-template/commit/a686a9a18dff356bcf48c50734df9a8c2e8c7225))
+
 ## [0.10.0](https://github.com/axxispay-usa/axxispay-helm-template/compare/axxispay-helm-template-v0.9.0...axxispay-helm-template-v0.10.0) (2026-05-08)
 
 
