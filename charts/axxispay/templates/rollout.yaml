@@ -31,6 +31,10 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ include "axxispay-helm-template.fullname" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -48,8 +52,10 @@ spec:
             - secretRef:
                 name: {{ include "axxispay-helm-template.fullname" . }}
             {{- end }}
+          {{- with .Values.securityContext }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if and .Values.enabled .Values.probes.liveness.enabled }}
           livenessProbe:
             httpGet:

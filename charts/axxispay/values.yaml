@@ -25,6 +25,13 @@ serviceAccount:
 # -- Pod-level security context (runAsUser, runAsGroup, fsGroup)
 podSecurityContext: {}
 
+# -- Tolerations para agendar pods em nós com taints específicos
+tolerations: []
+# tolerations:
+#   - key: infra
+#     value: "true"
+#     effect: NoSchedule
+
 # -- Preview deployment separado (Rollout + ConfigMap com labels distintos)
 preview:
   enabled: false
