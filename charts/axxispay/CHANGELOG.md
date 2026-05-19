@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/axxispay-usa/axxispay-helm-template/compare/axxispay-helm-template-v0.11.0...axxispay-helm-template-v0.12.0) (2026-05-19)
+
+
+### Features
+
+* add support extra manifest ([9fed423](https://github.com/axxispay-usa/axxispay-helm-template/commit/9fed4231ed79ead84fdba2ef8005ef8953407df3))
+
 ## [0.11.0](https://github.com/axxispay-usa/axxispay-helm-template/compare/axxispay-helm-template-v0.10.0...axxispay-helm-template-v0.11.0) (2026-05-12)
 
 
