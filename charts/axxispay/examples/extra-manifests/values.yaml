@@ -1,0 +1,112 @@
+enabled: true
+
+namespace: my-namespace
+
+image:
+  repository: 000000000000.dkr.ecr.us-west-2.amazonaws.com/my-app
+  tag: latest
+  pullPolicy: Always
+
+containerPort: 8080
+
+service:
+  port: 80
+  targetPort: 8080
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 100Mi
+  limits:
+    memory: 128Mi
+
+rollout:
+  enabled: true
+  revisionHistoryLimit: 1
+  strategy:
+    canary:
+      maxSurge: "25%"
+      maxUnavailable: 0
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+
+configmap:
+  enabled: true
+  data:
+    APP_PORT: "8080"
+    APP_ENV: "production"
+
+externalSecret:
+  enabled: true
+  refreshInterval: 30s
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: my-apps
+  target:
+    creationPolicy: Owner
+  dataFrom:
+    - extract:
+        key: my-namespace/my-app-secrets
+
+ingress:
+  enabled: false
+
+# extraManifests permite criar qualquer recurso Kubernetes não suportado
+# nativamente pelo chart. Cada item é renderizado como um manifest separado.
+# O campo `tpl` está ativo — é possível usar funções Helm como
+# {{ .Values.namespace }} ou {{ .Release.Name }} dentro dos manifestos.
+extraManifests:
+
+  # Exemplo 1: CronJob para tarefas agendadas
+  - apiVersion: batch/v1
+    kind: CronJob
+    metadata:
+      name: my-app-cleanup
+      namespace: my-namespace
+    spec:
+      schedule: "0 3 * * *"
+      jobTemplate:
+        spec:
+          template:
+            spec:
+              restartPolicy: OnFailure
+              containers:
+                - name: cleanup
+                  image: 000000000000.dkr.ecr.us-west-2.amazonaws.com/my-app:latest
+                  command: ["./cleanup.sh"]
+
+  # Exemplo 2: PodDisruptionBudget para alta disponibilidade
+  - apiVersion: policy/v1
+    kind: PodDisruptionBudget
+    metadata:
+      name: my-app-pdb
+      namespace: my-namespace
+    spec:
+      minAvailable: 1
+      selector:
+        matchLabels:
+          app: my-app
+
+  # Exemplo 3: NetworkPolicy restringindo tráfego de entrada
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: my-app-netpol
+      namespace: my-namespace
+    spec:
+      podSelector:
+        matchLabels:
+          app: my-app
+      policyTypes:
+        - Ingress
+      ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                  app: my-app-bff
+          ports:
+            - protocol: TCP
+              port: 8080
