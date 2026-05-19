@@ -154,6 +154,16 @@ configmap:
   #   APP_PORT: "8080"
   #   BACKEND_URL: "http://my-service/api/v1"
 
+# -- ExtraManifests — recursos adicionais não suportados nativamente pelo chart
+extraManifests: []
+# extraManifests:
+#   - apiVersion: v1
+#     kind: ConfigMap
+#     metadata:
+#       name: custom-config
+#     data:
+#       key: value
+
 # -- ExternalSecret — AWS Secrets Manager via ESO (>= v0.10)
 externalSecret:
   enabled: true
