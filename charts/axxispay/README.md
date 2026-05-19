@@ -42,9 +42,12 @@ axxispay-helm-template/
 │   ├── configmap.yaml              # ConfigMap com variáveis não sensíveis
 │   ├── configmap-preview.yaml      # ConfigMap para o ambiente de preview
 │   ├── external-secret.yaml        # ExternalSecret (AWS Secrets Manager via ESO)
+│   ├── extra-manifests.yaml        # Recursos arbitrários via extraManifests
 │   └── service-account.yaml        # ServiceAccount com suporte a IRSA
 └── examples/
     ├── values-reference.yaml       # referência completa de todos os campos
+    ├── extra-manifests/
+    │   └── values.yaml             # exemplo de uso do extraManifests (CronJob, PDB, NetworkPolicy)
     ├── axxis-bns-ads/
     │   ├── values-homolog.yaml
     │   └── values-prod.yaml
@@ -192,7 +195,7 @@ helm upgrade --install <app-name> oci://ghcr.io/axxispay-usa/axxispay-helm-templ
 
 ## ArgoCD
 
-O ArgoCD aponta para o repositório Git, usando o chart diretamente via `path`:
+O padrão adotado é **multi-source**: o chart é consumido via OCI (GHCR) e os `values.yaml` vivem em um repositório Git separado. Isso desacopla o versionamento do chart do versionamento das configurações por ambiente.
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -202,21 +205,26 @@ metadata:
   namespace: argocd
   annotations:
     # argocd-image-updater monitora o ECR e atualiza image.tag automaticamente
-    argocd-image-updater.argoproj.io/image-list: app=<ecr-uri>/<app-name>
-    argocd-image-updater.argoproj.io/app.update-strategy: digest
-    argocd-image-updater.argoproj.io/app.helm.image-name: image.repository
-    argocd-image-updater.argoproj.io/app.helm.image-tag: image.tag
+    argocd-image-updater.argoproj.io/image-list: axxis-app=<ecr-uri>/<app-name>:<env-tag>
+    argocd-image-updater.argoproj.io/axxis-app.update-strategy: digest
+    argocd-image-updater.argoproj.io/axxis-app.helm.image-name: image.repository
+    argocd-image-updater.argoproj.io/axxis-app.helm.image-tag: image.tag
     argocd-image-updater.argoproj.io/write-back-method: argocd
 spec:
   project: bns
-  source:
-    repoURL: git@github.com:axxispay-usa/axxispay-helm-template.git
-    targetRevision: main
-    path: charts/axxispay
-    helm:
-      releaseName: <app-name>
-      valueFiles:
-        - ../../examples/<app-name>/values-homolog.yaml
+  sources:
+    # Fonte 1: chart OCI versionado no GHCR
+    - chart: axxispay-helm-template
+      repoURL: ghcr.io/axxispay-usa
+      targetRevision: 0.11.0
+      helm:
+        releaseName: <app-name>
+        valueFiles:
+          - $values/axxispay-<env>/<app-name>/helm/values.yaml
+    # Fonte 2: repositório Git com os values por ambiente (referenciado como $values)
+    - repoURL: git@github.com:axxispay-usa/axxispay-bns-k8s-manifest.git
+      targetRevision: main
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: bns
@@ -259,6 +267,7 @@ spec:
 | `preview.configmap.data` | Variáveis de ambiente específicas do preview | `{}` |
 | `serviceAccount.enabled` | Criar ServiceAccount com suporte a IRSA | `false` |
 | `reloader.enabled` | Reiniciar pods ao mudar ConfigMap/Secret | `true` |
+| `extraManifests` | Lista de recursos Kubernetes arbitrários renderizados pelo chart | `[]` |
 
 ## Requisitos
 
