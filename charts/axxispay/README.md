@@ -48,18 +48,6 @@ axxispay-helm-template/
     ├── values-reference.yaml       # referência completa de todos os campos
     ├── extra-manifests/
     │   └── values.yaml             # exemplo de uso do extraManifests (CronJob, PDB, NetworkPolicy)
-    ├── axxis-bns-ads/
-    │   ├── values-homolog.yaml
-    │   └── values-prod.yaml
-    ├── axxis-bns-api/
-    │   ├── values-homolog.yaml
-    │   └── values-prod.yaml
-    ├── axxis-bns-bff/
-    │   ├── values-homolog.yaml
-    │   └── values-prod.yaml
-    └── axxis-bns-card/
-        ├── values-homolog.yaml
-        └── values-prod.yaml
 ```
 
 ## Como o nome da aplicação é definido
