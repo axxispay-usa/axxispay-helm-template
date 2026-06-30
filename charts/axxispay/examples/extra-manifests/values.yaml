@@ -110,3 +110,4 @@ extraManifests:
           ports:
             - protocol: TCP
               port: 8080
+
